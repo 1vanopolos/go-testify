@@ -3,34 +3,47 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
+//Тестирую статус ответа 200
+	func TestMainHandlerStausOk(t *testing.T){
 
-	totalCount := len(cafeList["moscow"])
-	req := httptest.NewRequest("GET", "/cafe?count=10&city=moscow", nil) // здесь нужно создать запрос к сервису
+		req := httptest.NewRequest("GET", "/cafe?count=10&city=moscow", nil) // здесь нужно создать запрос к сервису
+		responseRecorder := httptest.NewRecorder()
+		handler := http.HandlerFunc(mainHandle)
+		handler.ServeHTTP(responseRecorder, req)
+		//проверяю код запроса 200
+		require.Equal(t, responseRecorder.Code, http.StatusOK)
+	}
 
-	responseRecorder := httptest.NewRecorder()
-	handler := http.HandlerFunc(mainHandle)
-	handler.ServeHTTP(responseRecorder, req)
+	//Тестирую правильность заполнения города
+	func TestMainHandlerCityOk(t *testing.T){
+		//Запрос другого города
+		req := httptest.NewRequest("GET", "/cafe?count=10&city=spb", nil) // здесь нужно создать запрос к сервису
+		responseRecorder := httptest.NewRecorder()
+		handler := http.HandlerFunc(mainHandle)
+		handler.ServeHTTP(responseRecorder, req)
+		//проверяю код запроса 200
+		require.Equal(t, responseRecorder.Code, http.StatusBadRequest)
+	}
 
-	//Первая проверка
-	//проверяю код запроса 200
-	require.Equal(t, responseRecorder.Code, http.StatusOK)
-	//проверяю тело запроса на заполненность
-	assert.NotEmpty(t, responseRecorder.Body)
+	//Тестирую параметр count
+	func TestMainHandlerCount(t *testing.T){
+		
+		req := httptest.NewRequest("GET", "/cafe?count=10&city=moscow", nil) // здесь нужно создать запрос к сервису
+		responseRecorder := httptest.NewRecorder()
+		handler := http.HandlerFunc(mainHandle)
+		handler.ServeHTTP(responseRecorder, req)
+		
+		//получаю параметр count
+		count := strings.Join(cafeList["moscow"], ",")
+		//сравниваю count и тело
+		
+		assert.Equal(t, count, responseRecorder.Body.String())
+	}
 
-	//Вторая проверка
-	//Проверяю на правильность заполненеия города
-	require.Equal(t, responseRecorder.Code, http.StatusBadRequest)
-
-	//Третья проверка
-	//получаю параметр count
-	count := req.URL.Query().Get("count")
-	//сравниваю totalCount и count
-	assert.Equal(t, totalCount, count)
-}
