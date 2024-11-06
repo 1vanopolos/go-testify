@@ -19,7 +19,7 @@ func TestMainHandlerStausOk(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 	//проверяю код запроса 200
 	require.Equal(t, responseRecorder.Code, http.StatusOK, "Wrong response code")
-	assert.NotEmpty(t, responseRecorder.Body, "Empty response body")
+	require.NotEmpty(t, responseRecorder.Body, "Empty response body")
 }
 
 // Тестирую правильность заполнения города
@@ -43,7 +43,7 @@ func TestMainHandlerCount(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 	//проверяю код запроса 200
 	require.Equal(t, http.StatusOK, responseRecorder.Code, "Wrong response code")
-	assert.NotEmpty(t, responseRecorder.Body, "Empty response body")
+	require.NotEmpty(t, responseRecorder.Body, "Empty response body")
 	//сравниваю количество кафе
 	quantity := strings.Split(responseRecorder.Body.String(), ",")
 	assert.Len(t, quantity, 4, "Wrong cafe quantity")
